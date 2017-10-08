@@ -97,7 +97,7 @@ CmdParser::execOneCmd()
 void
 CmdParser::printHelps() const
 {
-   // TODO...
+   // TODO...Done
    for (CmdMap::const_iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++)
    {
      i->second->help();
@@ -136,6 +136,14 @@ CmdParser::printHistory(int nPrint) const
 // 3. Get the command options from the trailing part of str (i.e. second
 //    words and beyond) and store them in "option"
 //
+string getsec(string cmd){
+  for (unsigned i=0; i < cmd.size();i++){
+    if(cmd[i]==' '){
+      return cmd.substr(i + 1, cmd.size() - (i + 1));
+    }
+  }
+  return 0;
+}
 CmdExec*
 CmdParser::parseCmd(string& option)
 {
@@ -150,7 +158,7 @@ CmdParser::parseCmd(string& option)
     return NULL;
    }
    else{
-     option = e->getOptCmd();
+     option = getsec(str);
      return e;
    }
 }
@@ -318,7 +326,7 @@ CmdParser::getCmd(string cmd)
        //check option
        if(cmd.size()>(*i).first.size()){
        string remind = cmd.substr((*i).first.size() + 1, cmd.size() - ((*i).first.size() + 1));
-       e->setOptCmd(remind);
+       //e->setOptCmd(remind);
        }
      }
    }
