@@ -5,7 +5,7 @@
                 "name": "(gdb) Launch",
                 "type": "cppdbg",
                 "request": "launch",
-                "program": "$./mydb",
+                "program": "/home/jexus/Documents/Myhw3/mydb",
                 "args": [],
                 "stopAtEntry": false,
                 "cwd": "${workspaceRoot}",

@@ -145,9 +145,14 @@ CmdParser::parseCmd(string& option)
 
    // TODO...
    assert(str[0] != 0 && str[0] != ' ');
-   return getCmd(str);//->exec("-f");
-
-   return NULL;
+   CmdExec* e = getCmd(str);
+   if (e == 0){
+    return NULL;
+   }
+   else{
+     option = e->getOptCmd();
+     return e;
+   }
 }
 
 // This function is called by pressing 'Tab'.
@@ -296,23 +301,28 @@ CmdParser::getCmd(string cmd)
 {
    CmdExec* e = 0;
    // TODO...
-   
+   /*
    for (unsigned int i = 0; i < cmd.size(); i++){
      cmd[i] = toupper(cmd[i]);
    }
-   
+   */
    bool flag = 0;
    for (CmdMap::iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++)
    {
-     if (myStrNCmp(cmd,(*i).first,(*i).first.size()))//cmd.substr(0, (*i).first.size()) == (*i).first)
+     if (cmd.size()>=(*i).first.size()){
+     if (myStrNCmp(cmd,(*i).first,(*i).first.size())==0)//cmd.substr(0, (*i).first.size()) == (*i).first)
      {
        cout << "getCmd:"<<(*i).first << endl;
        flag = 1;
        e = (*i).second;
        //check option
+       if(cmd.size()>(*i).first.size()){
+       string remind = cmd.substr((*i).first.size() + 1, cmd.size() - ((*i).first.size() + 1));
+       e->setOptCmd(remind);
+       }
      }
-
    }
+  }
    
    if (flag==0){
      cout << "no such cmd named" << cmd << endl;
