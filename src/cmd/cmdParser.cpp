@@ -140,6 +140,8 @@ CmdParser::parseCmd(string& option)
 
    // TODO...
    assert(str[0] != 0 && str[0] != ' ');
+   getCmd(str)->exec("-f");
+
    return NULL;
 }
 
@@ -289,7 +291,25 @@ CmdParser::getCmd(string cmd)
 {
    CmdExec* e = 0;
    // TODO...
-   
+   for (unsigned int i = 0; i < cmd.size(); i++){
+     cmd[i] = toupper(cmd[i]);
+   }
+   bool flag = 0;
+   for (CmdMap::iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++)
+   {
+     if (cmd.substr(0, (*i).first.size()) == (*i).first)
+     {
+       cout << (*i).first << endl;
+       flag = 1;
+       e = (*i).second;
+       //check option
+     }
+
+   }
+   if (flag==0){
+     cout << "no such cmd named" << cmd << endl;
+   }
+
    return e;
 }
 

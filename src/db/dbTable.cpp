@@ -11,7 +11,10 @@
 #include <cctype>
 #include <cassert>
 #include <set>
+#include <stdlib.h>
+#include <typeinfo>
 #include <algorithm>
+#include <sstream>
 #include "dbTable.h"
 #include "util.h"
 
@@ -62,7 +65,7 @@ bool in(int item,vector<int> bag){
     return 0;
 }
 
-char distinguish_enter_type(const fstream& ifs){
+char distinguish_enter_type(ifstream& ifs){
     stringstream ss;
     copy(istreambuf_iterator<char>(ifs),
      istreambuf_iterator<char>(),
