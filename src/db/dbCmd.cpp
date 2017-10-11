@@ -80,8 +80,37 @@ CmdExecStatus
 DBAppendCmd::exec(const string& option)
 {
    // TODO...
-   cout << "Append" << option << "\n";
+   //cout << "Append" << option << "\n";
    // check option
+   vector<string> options;
+   if (!CmdExec::lexOptions(option, options))
+      return CMD_EXEC_ERROR;
+
+   bool doRow = false;
+   if (myStrNCmp("-Row", options[0], 2) == 0) doRow = true;
+   else if (myStrNCmp("-Column", options[0], 2) == 0) doRow = false;
+   else cout << "haha"; return CmdExec::errorOption(CMD_OPT_ILLEGAL, options[0]);
+
+   vector<int> vec;
+   bool flag = 0;
+   for (vector<string>::iterator iter = options.begin(); iter < options.end(); iter++)
+   {
+           if (flag==0) flag = 1; continue;
+           cout << *iter << endl;
+           int temp;
+           if ((*iter) == "-") vec.push_back(INT_MAX);
+           else if(myStr2Int(*iter,temp)){vec.push_back(temp);}
+           else return CmdExec::errorOption(CMD_OPT_ILLEGAL, (*iter));
+   }
+   if (doRow)
+   {
+           DBRow temprow(vec);
+           dbtbl.addRow(temprow);
+   }
+   else
+   {
+           dbtbl.addCol(vec);
+   }
 
    return CMD_EXEC_DONE;
 }
