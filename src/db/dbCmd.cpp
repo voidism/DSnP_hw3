@@ -287,6 +287,45 @@ DBPrintCmd::exec(const string& option)
 {  
    // TODO...
    cout << "DBPrintCmd" << option << "\n";
+   if (!dbtbl) {
+        cerr << "Error: Table is not yet created!!" << endl;
+        return CMD_EXEC_ERROR;
+     }
+   int c = INT_MAX;
+   int r = INT_MAX;
+   vector<string> opts;
+   CmdExec::lexOptions(option, opts);
+   if (myStrNCmp("-Summary",opts[0],2) == 0){
+           if (opts.size()>1)
+                return errorOption(CMD_OPT_EXTRA, opts[1]);
+           dbtbl.printSummary();
+   }
+   else if (myStrNCmp("-Table",opts[0],2) == 0){
+           if (opts.size()>1)
+                return errorOption(CMD_OPT_EXTRA, opts[1]);
+           cout << dbtbl;
+   }
+   else if (myStrNCmp("-Column",opts[0],2) == 0){
+        if (opts.size() > 2)
+                return errorOption(CMD_OPT_EXTRA, opts[2]);
+        if (checkColIdx(opts[1], c))
+                dbtbl.printCol(c);
+}
+   else if (myStrNCmp("-Row",opts[0],2) == 0){
+           if (opts.size() > 2)
+                   return errorOption(CMD_OPT_EXTRA, opts[2]);
+           if (checkRowIdx(opts[1], r))
+                   cout << dbtbl[r];
+   }
+   else if (opts.size()>=2){
+           if (opts.size() > 2)
+                   return errorOption(CMD_OPT_EXTRA, opts[2]);
+           if (checkRowIdx(opts[0],r) && checkColIdx(opts[1],c))
+                   cout << dbtbl[r][c];
+   }
+   else{
+        return errorOption(CMD_OPT_MISSING, opts[0]);
+   }
 
    return CMD_EXEC_DONE;
 }
@@ -439,4 +478,3 @@ DBSumCmd::help() const
    cout << setw(15) << left << "DBSUm: "
         << "compute the summation of a column" << endl;
 }
-

@@ -136,14 +136,15 @@ CmdParser::printHistory(int nPrint) const
 // 3. Get the command options from the trailing part of str (i.e. second
 //    words and beyond) and store them in "option"
 //
-string getsec(string cmd){
+/* string getsec(string cmd){
   for (unsigned i=0; i < cmd.size();i++){
     if(cmd[i]==' '){
       return cmd.substr(i + 1, cmd.size() - (i + 1));
     }
   }
-  return 0;
-}
+  string tmp = " ";
+  return tmp;
+} */
 CmdExec*
 CmdParser::parseCmd(string& option)
 {
@@ -153,14 +154,20 @@ CmdParser::parseCmd(string& option)
 
    // TODO...
    assert(str[0] != 0 && str[0] != ' ');
-   CmdExec* e = getCmd(str);
-   if (e == 0){
+   string maincmd;
+   size_t seccmd = myStrGetTok(str, maincmd);
+   CmdExec *e = getCmd(maincmd);
+   if (e == NULL){
+    cerr << "Error: Illegal option!! (" << maincmd << ")" << endl;
+    //e->errorOption(CMD_OPT_ILLEGAL, maincmd);
     return NULL;
+    }
+    else if (seccmd!=string::npos){
+      option = str.substr(seccmd);
+      cout << "seccmd is " << option << endl;
+      return e;
    }
-   else{
-     option = getsec(str);
-     return e;
-   }
+   return e;
 }
 
 // This function is called by pressing 'Tab'.
@@ -309,11 +316,6 @@ CmdParser::getCmd(string cmd)
 {
    CmdExec* e = 0;
    // TODO...
-   /*
-   for (unsigned int i = 0; i < cmd.size(); i++){
-     cmd[i] = toupper(cmd[i]);
-   }
-   */
    bool flag = 0;
    for (CmdMap::iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++)
    {
@@ -324,17 +326,17 @@ CmdParser::getCmd(string cmd)
        flag = 1;
        e = (*i).second;
        //check option
-       if(cmd.size()>(*i).first.size()){
-       string remind = cmd.substr((*i).first.size() + 1, cmd.size() - ((*i).first.size() + 1));
+       //if(cmd.size()>(*i).first.size()){
+       //string remind = cmd.substr((*i).first.size() + 1, cmd.size() - ((*i).first.size() + 1));
        //e->setOptCmd(remind);
-       }
+       //}
      }
    }
   }
    
-   if (flag==0){
-     cout << "no such cmd named" << cmd << endl;
-   }
+   //if (flag==0){
+   //  cout << "no such cmd named" << cmd << endl;
+   //}
 
    return e;
 }

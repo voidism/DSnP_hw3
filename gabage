@@ -1,0 +1,22 @@
+cout << "loop\n";
+       stringstream ss(line);
+       string item;
+       //vector<int> vec;
+       DBRow *tmprow = new DBRow();
+       while(getline(ss, item, ',')){
+           if(item==""){
+               tmprow->addData(INT_MAX);
+           }
+           else if(dtp=='\n'&&item=="\r"){
+            tmprow->addData(INT_MAX);
+        }
+           else{
+               tmprow->addData(atoi(item.c_str()));
+           }
+       }
+       if((ss.rdbuf()->in_avail()==0)&&(item.empty())){
+             tmprow->addData(INT_MAX);
+       }
+       t.addRow(*tmprow);
+       cout << "add row";
+       delete tmprow;

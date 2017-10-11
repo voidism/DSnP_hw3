@@ -28,6 +28,10 @@ ostream& operator << (ostream& os, const DBRow& r)
    // TODO: to print out a row.
    // - Data are seperated by a space. No trailing space at the end.
    // - Null cells are printed as '.'
+   for(unsigned int j=0;j<r.size();j++){
+    if(r[j]==INT_MAX){ os << setw(6) <<'.'; }
+    else os << setw(6) <<r[j];
+}
    return os;
 }
 
@@ -38,15 +42,15 @@ ostream& operator << (ostream& os, const DBTable& t)
    // - Null cells are printed as '.'
    for(unsigned int i=0;i<t.nRows();i++){
     for(unsigned int j=0;j<t.nCols();j++){
-         if(t._table[i][j]==INT_MAX){ cout << setw(6) <<'.'; }
-         else os << setw(4) <<t._table[i][j];
+         if(t._table[i][j]==INT_MAX){ os << setw(6) <<'.'; }
+         else os << setw(6) <<t._table[i][j];
      }
      os << endl;
  }
    return os;
 }
 
-void cta(string letter)
+void string_to_ascii(string letter)
 {
     for (unsigned int i = 0; i < letter.length(); i++)
     {
@@ -65,7 +69,7 @@ bool in(int item,vector<int> bag){
     return 0;
 }
 
-char distinguish_enter_type(ifstream& ifs){
+/* char dis(ifstream& ifs){
     stringstream ss;
     copy(istreambuf_iterator<char>(ifs),
      istreambuf_iterator<char>(),
@@ -78,34 +82,54 @@ char distinguish_enter_type(ifstream& ifs){
     if(record.find("\n")!=string::npos)
         return '\n';
     return '\n';
-}
+} */
+/* int dis(ifstream &file)
+{
+	stringstream buffer;
+	buffer << file.rdbuf();
+	string str = buffer.str();
+	if (str.find("\r\n") != string::npos)return 26;
+    if (str.find("\r") != string::npos)return 2;
+    if (str.find("\n") != string::npos)return 6;
+	return 6;
+} */
 
 ifstream& operator >> (ifstream& ifs, DBTable& t)
 {
    // TODO: to read in data from csv file and store them in a table
    // - You can assume the input file is with correct csv file format
    // - NO NEED to handle error file format
-   string line;
-   char dtp;
-   dtp = distinguish_enter_type(ifs);
-   while(getline(ifs, line, dtp)){
-       stringstream ss(line);
-       string item;
-       vector<int> vec;
-       while(getline(ss, item, ',')){
-           if(item==""||item=="\r"){
-               vec.push_back(INT_MAX);
-           }
-           else{
-               vec.push_back(atoi(item.c_str()));
-           }
-       }
-       if((ss.rdbuf()->in_avail()==0)&&(item.empty())){
-           vec.push_back(INT_MAX);
-       }
-       DBRow temp(vec);
-       t._table.push_back(temp);
+   
+   
+   if (ifs.is_open()) {
+    string line;
+    while (getline(ifs,line,'\r')){
+        //cout << "loop\n";
+        stringstream ss(line);
+        string item;
+        //vector<int> vec;
+        DBRow *tmprow = new DBRow();
+        while(getline(ss, item, ',')){
+            if(item==""){
+                tmprow->addData(INT_MAX);
+            }
+            else if(item=="\r"){
+             tmprow->addData(INT_MAX);
+         }
+            else{
+                tmprow->addData(atoi(item.c_str()));
+            }
+        }
+        if((ss.rdbuf()->in_avail()==0)&&(item.empty())){
+              tmprow->addData(INT_MAX);
+        }
+        t.addRow(*tmprow);
+        //cout << "add row";
+        delete tmprow;
+    }
    }
+      if(!t) cout << "read fail.\n";
+
    return ifs;
 }
 
@@ -116,6 +140,7 @@ void
 DBRow::removeCell(size_t c)
 {
    // TODO
+
 }
 
 /*****************************************/
@@ -136,12 +161,19 @@ void
 DBTable::reset()
 {
    // TODO
+   _table.clear();
 }
 
 void
 DBTable::addCol(const vector<int>& d)
 {
    // TODO: add a column to the right of the table. Data are in 'd'.
+   size_t d_size = d.size();
+   for (size_t i = 0, n = _table.size(); i < n; ++i)
+   {
+    if (i<d_size) _table[i].addData(d[i]);
+    else _table[i].addData(INT_MAX);
+   }
 }
 
 void
@@ -210,6 +242,12 @@ DBTable::printCol(size_t c) const
    // TODO: to print out a column.
    // - Data are seperated by a space. No trailing space at the end.
    // - Null cells are printed as '.'
+   for(unsigned int j=0;j<_table.size();j++){
+    if(_table[j][c]==INT_MAX){ cout <<'.'; }
+    else cout << _table[j][c];
+    if (j!=_table.size()-1)
+        cout << ' ';
+   }
 }
 
 void
