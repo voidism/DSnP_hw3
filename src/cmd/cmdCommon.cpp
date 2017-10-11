@@ -36,11 +36,12 @@ HelpCmd::exec(const string& option)
    // check option
    string token;
    if (!CmdExec::lexSingleOption(option, token))
-      return CMD_EXEC_ERROR;
+         return CMD_EXEC_ERROR;
    if (token.size()) {
-      CmdExec* e = cmdMgr->getCmd(token);
-      if (!e) return CmdExec::errorOption(CMD_OPT_ILLEGAL, token);
-      e->usage(cout);
+         CmdExec *e = cmdMgr->getCmd(token);
+         if (!e)
+               return CmdExec::errorOption(CMD_OPT_ILLEGAL, token);
+         e->usage(cout);
    }
    else
       cmdMgr->printHelps();

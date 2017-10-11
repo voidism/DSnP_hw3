@@ -17,6 +17,7 @@
 #include <sstream>
 #include "dbTable.h"
 #include "util.h"
+#include <algorithm>
 
 using namespace std;
 
@@ -94,7 +95,21 @@ ifstream& operator >> (ifstream& ifs, DBTable& t)
    
    if (ifs.is_open()) {
     string line;
-    while (getline(ifs,line,'\r')){
+    stringstream buffer;
+    std::streampos p = ifs.tellg();
+    buffer << ifs.rdbuf();
+    ifs.seekg(p);
+    string str = buffer.str();
+    char dtp = '0';
+    //if (dtp == '0')
+    //cout << "fuck\n";
+    if (str.find("\r\n") != string::npos) dtp = '\n';
+    else if (str.find("\r") != string::npos) dtp = '\r';
+    else if (str.find("\n") != string::npos) dtp = '\n';
+    if (dtp == '0')
+        cout << "fuck\n";
+    while (getline(ifs, line, dtp))
+    {
         //cout << "loop\n";
         stringstream ss(line);
         string item;
@@ -147,6 +162,10 @@ DBSort::operator() (const DBRow& r1, const DBRow& r2) const
 {
    // TODO: called as a functional object that compares the data in r1 and r2
    //       based on the order defined in _sortOrder
+   for(unsigned int i = 0; i < _sortOrder.size(); i++){
+    if(r1[ _sortOrder[i] ] < r2[ _sortOrder[i] ]) return true;
+    else if(r1[ _sortOrder[i] ] > r2[ _sortOrder[i] ]) return false;
+   }
    return false;
 }
 
@@ -200,13 +219,17 @@ DBTable::getMax(size_t c) const
 {
    // TODO...Done: get the max data in column #c
    int max = INT_MIN;
+   bool flag = 0;
    for (size_t i = 0, n = _table.size(); i < n; ++i)
    {
        if(_table[i][c]!=INT_MAX&&_table[i][c]>max){
            max = _table[i][c];
+           flag = 1;
        }
    }
-   return max;;
+   if (flag ==0)
+       return std::numeric_limits<float>::quiet_NaN();
+   return (float)max;
 }
 
 float
@@ -214,13 +237,17 @@ DBTable::getMin(size_t c) const
 {
    // TODO...Done: get the min data in column #c
    int min = INT_MAX;
+   bool flag = 0;
    for (size_t i = 0, n = _table.size(); i < n; ++i)
    {
        if(_table[i][c]<min){
            min = _table[i][c];
+           flag = 1;
        }
    }
-   return min;
+   if (flag ==0)
+       return std::numeric_limits<float>::quiet_NaN();
+   return (float)min;
 }
 
 float 
@@ -228,12 +255,16 @@ DBTable::getSum(size_t c) const
 {
    // TODO...Done: compute the sum of data in column #c
    float sum = 0.0;
+   bool flag = 0;
    for (size_t i = 0, n = _table.size(); i < n; ++i)
    {
        if(_table[i][c]!=INT_MAX){
            sum += (float)_table[i][c];
+           flag = 1;
        }
    }
+   if (flag ==0)
+       return std::numeric_limits<float>::quiet_NaN();
    return sum;
 }
 
@@ -252,12 +283,16 @@ DBTable::getCount(size_t c) const
    // TODO...Done: compute the number of distinct data in column #c
    // - Ignore null cells
    vector<int> bag;
+   bool flag = 0;
    for (size_t i = 0, n = _table.size(); i < n; ++i)
    {
        if(_table[i][c]!=INT_MAX&&!in(_table[i][c],bag)){
            bag.push_back(_table[i][c]);
+           flag = 1;
        }
    }
+   if (flag ==0)
+       return std::numeric_limits<int>::quiet_NaN();
    return bag.size();
 }
 
@@ -267,13 +302,17 @@ DBTable::getAve(size_t c) const
    // TODO...Done: compute the average of data in column #c
    float sum = 0.0;
    float itm = 0.0;
+   bool flag = 0;
    for (size_t i = 0, n = _table.size(); i < n; ++i)
    {
        if(_table[i][c]!=INT_MAX){
            sum += (float)_table[i][c];
            itm += 1.0;
+           flag = 1;
        }
    }
+   if (flag ==0)
+       return std::numeric_limits<float>::quiet_NaN();
    return sum/itm;
    return 0.0;
 }
@@ -282,6 +321,7 @@ void
 DBTable::sort(const struct DBSort& s)
 {
    // TODO: sort the data according to the order of columns in 's'
+   ::sort(_table.begin(), _table.end(), s);
 }
 
 void

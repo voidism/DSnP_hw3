@@ -85,30 +85,40 @@ DBAppendCmd::exec(const string& option)
    vector<string> options;
    if (!CmdExec::lexOptions(option, options))
       return CMD_EXEC_ERROR;
+   if (options.empty())
+   return CmdExec::errorOption(CMD_OPT_MISSING, "");
 
    bool doRow = false;
    if (myStrNCmp("-Row", options[0], 2) == 0) doRow = true;
    else if (myStrNCmp("-Column", options[0], 2) == 0) doRow = false;
-   else cout << "haha"; return CmdExec::errorOption(CMD_OPT_ILLEGAL, options[0]);
+   else return CmdExec::errorOption(CMD_OPT_ILLEGAL, options[0]);
 
    vector<int> vec;
    bool flag = 0;
    for (vector<string>::iterator iter = options.begin(); iter < options.end(); iter++)
    {
-           if (flag==0) flag = 1; continue;
-           cout << *iter << endl;
+           if (flag==0) flag = 1;
+           else{
+           //cout << *iter << endl;
            int temp;
            if ((*iter) == "-") vec.push_back(INT_MAX);
            else if(myStr2Int(*iter,temp)){vec.push_back(temp);}
            else return CmdExec::errorOption(CMD_OPT_ILLEGAL, (*iter));
+           }
    }
    if (doRow)
    {
+           for (unsigned int i = vec.size(); i < dbtbl.nRows();i++){
+                   vec.push_back(INT_MAX);
+           }
            DBRow temprow(vec);
            dbtbl.addRow(temprow);
    }
    else
    {
+        for (unsigned int i = vec.size(); i < dbtbl.nCols();i++){
+                vec.push_back(INT_MAX);
+        }
            dbtbl.addCol(vec);
    }
 
@@ -140,7 +150,7 @@ DBAveCmd::exec(const string& option)
    if (!CmdExec::lexSingleOption(option, token, false))
       return CMD_EXEC_ERROR;
    int c;
-   if (!checkColIdx(option, c)) return CMD_EXEC_ERROR;
+   if (!checkColIdx(token, c)) return CMD_EXEC_ERROR;
 
    float a = dbtbl.getAve(c);
    ios_base::fmtflags origFlags = cout.flags();
@@ -176,7 +186,7 @@ DBCountCmd::exec(const string& option)
    if (!CmdExec::lexSingleOption(option, token, false))
       return CMD_EXEC_ERROR;
    int c;
-   if (!checkColIdx(option, c)) return CMD_EXEC_ERROR;
+   if (!checkColIdx(token, c)) return CMD_EXEC_ERROR;
 
    int n = dbtbl.getCount(c);
    cout << "The distinct count of column " << c << " is " << n << "." << endl;
@@ -252,7 +262,7 @@ DBMaxCmd::exec(const string& option)
    if (!CmdExec::lexSingleOption(option, token, false))
       return CMD_EXEC_ERROR;
    int c;
-   if (!checkColIdx(option, c)) return CMD_EXEC_ERROR;
+   if (!checkColIdx(token, c)) return CMD_EXEC_ERROR;
 
    float n = dbtbl.getMax(c);
    cout << "The max data of column " << c << " is " << n << "." << endl;
@@ -315,7 +325,8 @@ CmdExecStatus
 DBPrintCmd::exec(const string& option)
 {  
    // TODO...
-   cout << "DBPrintCmd" << option << "\n";
+   //cout << "DBPrintCmd" << option << "\n";
+   //if (option==0) return errorOption(CMD_OPT_MISSING, 0);
    if (!dbtbl) {
         cerr << "Error: Table is not yet created!!" << endl;
         return CMD_EXEC_ERROR;
@@ -324,6 +335,10 @@ DBPrintCmd::exec(const string& option)
    int r = INT_MAX;
    vector<string> opts;
    CmdExec::lexOptions(option, opts);
+   if (opts.empty())
+   return CmdExec::errorOption(CMD_OPT_MISSING, "");
+
+   
    if (myStrNCmp("-Summary",opts[0],2) == 0){
            if (opts.size()>1)
                 return errorOption(CMD_OPT_EXTRA, opts[1]);
@@ -353,7 +368,8 @@ DBPrintCmd::exec(const string& option)
                    cout << dbtbl[r][c];
    }
    else{
-        return errorOption(CMD_OPT_MISSING, opts[0]);
+           string i = "";
+           return errorOption(CMD_OPT_MISSING, i);
    }
 
    return CMD_EXEC_DONE;
@@ -363,7 +379,8 @@ void
 DBPrintCmd::usage(ostream& os) const
 {
    os << "DBPrint < (int rowIdx) (int colIdx)\n"
-      << "        | -Row (int rowIdx) | -Column (colIdx) | -Table>" << endl;
+      << "        | -Row (int rowIdx) | -Column (colIdx) | -Table | -Summary>"
+      << endl;
 }
 
 void
@@ -487,7 +504,7 @@ DBSumCmd::exec(const string& option)
    if (!CmdExec::lexSingleOption(option, token, false))
       return CMD_EXEC_ERROR;
    int c;
-   if (!checkColIdx(option, c)) return CMD_EXEC_ERROR;
+   if (!checkColIdx(token, c)) return CMD_EXEC_ERROR;
 
    float n = dbtbl.getSum(c);
    cout << "The sum of column " << c << " is " << n << "." << endl;

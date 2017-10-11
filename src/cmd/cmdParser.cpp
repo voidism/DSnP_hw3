@@ -167,6 +167,10 @@ CmdParser::parseCmd(string& option)
       //cout << "seccmd is " << option << endl;
       return e;
    }
+   /* else{
+     option = "-";
+     return e;
+   } */
    return e;
 }
 
@@ -417,4 +421,3 @@ CmdExec::errorOption(CmdOptionError err, const string& opt) const
    }
    return CMD_EXEC_ERROR;
 }
-
