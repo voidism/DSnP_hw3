@@ -25,7 +25,7 @@ using namespace std;
 /*****************************************/
 ostream& operator << (ostream& os, const DBRow& r)
 {
-   // TODO: to print out a row.
+   // TODO...Done: to print out a row.
    // - Data are seperated by a space. No trailing space at the end.
    // - Null cells are printed as '.'
    for(unsigned int j=0;j<r.size();j++){
@@ -37,15 +37,15 @@ ostream& operator << (ostream& os, const DBRow& r)
 
 ostream& operator << (ostream& os, const DBTable& t)
 {
-   // TODO: to print out a table
+   // TODO...Done: to print out a table
    // - Data are seperated by setw(6) and aligned right.
    // - Null cells are printed as '.'
-   for(unsigned int i=0;i<t.nRows();i++){
+   for(unsigned int i=0;i<t.nRows();i++){/* 
     for(unsigned int j=0;j<t.nCols();j++){
          if(t._table[i][j]==INT_MAX){ os << setw(6) <<'.'; }
          else os << setw(6) <<t._table[i][j];
-     }
-     os << endl;
+     } */
+     os << t._table[i] << endl;
  }
    return os;
 }
@@ -58,15 +58,6 @@ void string_to_ascii(string letter)
         cout << int(x) << "\t";
     }
     cout << endl;
-}
-
-bool in(int item,vector<int> bag){
-    for(unsigned int i=0;i<bag.size();i++){
-        if(item==bag[i]){
-            return 1;
-        }
-    }
-    return 0;
 }
 
 /* char dis(ifstream& ifs){
@@ -139,7 +130,12 @@ ifstream& operator >> (ifstream& ifs, DBTable& t)
 void
 DBRow::removeCell(size_t c)
 {
-   // TODO
+   // TODO...Done
+   for (size_t i = c, n = _data.size(); i < n-1; ++i)
+   {
+       _data[i] = _data[i + 1];
+   }
+   _data.pop_back();
 
 }
 
@@ -160,14 +156,14 @@ DBSort::operator() (const DBRow& r1, const DBRow& r2) const
 void
 DBTable::reset()
 {
-   // TODO
+   // TODO...Done
    _table.clear();
 }
 
 void
 DBTable::addCol(const vector<int>& d)
 {
-   // TODO: add a column to the right of the table. Data are in 'd'.
+   // TODO...Done: add a column to the right of the table. Data are in 'd'.
    size_t d_size = d.size();
    for (size_t i = 0, n = _table.size(); i < n; ++i)
    {
@@ -179,7 +175,12 @@ DBTable::addCol(const vector<int>& d)
 void
 DBTable::delRow(int c)
 {
-   // TODO: delete row #c. Note #0 is the first row.
+   // TODO...Done: delete row #c. Note #0 is the first row.
+   for (size_t i = c, n = _table.size(); i < n-1; ++i)
+   {
+       _table[i] = _table[i + 1];
+   }
+   _table.pop_back();
 }
 
 void
@@ -197,36 +198,83 @@ DBTable::delCol(int c)
 float
 DBTable::getMax(size_t c) const
 {
-   // TODO: get the max data in column #c
-   return 0.0;
+   // TODO...Done: get the max data in column #c
+   int max = INT_MIN;
+   for (size_t i = 0, n = _table.size(); i < n; ++i)
+   {
+       if(_table[i][c]!=INT_MAX&&_table[i][c]>max){
+           max = _table[i][c];
+       }
+   }
+   return max;;
 }
 
 float
 DBTable::getMin(size_t c) const
 {
-   // TODO: get the min data in column #c
-   return 0.0;
+   // TODO...Done: get the min data in column #c
+   int min = INT_MAX;
+   for (size_t i = 0, n = _table.size(); i < n; ++i)
+   {
+       if(_table[i][c]<min){
+           min = _table[i][c];
+       }
+   }
+   return min;
 }
 
 float 
 DBTable::getSum(size_t c) const
 {
-   // TODO: compute the sum of data in column #c
-   return 0.0;
+   // TODO...Done: compute the sum of data in column #c
+   float sum = 0.0;
+   for (size_t i = 0, n = _table.size(); i < n; ++i)
+   {
+       if(_table[i][c]!=INT_MAX){
+           sum += (float)_table[i][c];
+       }
+   }
+   return sum;
+}
+
+bool in(int item,vector<int> bag){
+    for(unsigned int i=0;i<bag.size();i++){
+        if(item==bag[i]){
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int
 DBTable::getCount(size_t c) const
 {
-   // TODO: compute the number of distinct data in column #c
+   // TODO...Done: compute the number of distinct data in column #c
    // - Ignore null cells
-   return 0;
+   vector<int> bag;
+   for (size_t i = 0, n = _table.size(); i < n; ++i)
+   {
+       if(_table[i][c]!=INT_MAX&&!in(_table[i][c],bag)){
+           bag.push_back(_table[i][c]);
+       }
+   }
+   return bag.size();
 }
 
 float
 DBTable::getAve(size_t c) const
 {
-   // TODO: compute the average of data in column #c
+   // TODO...Done: compute the average of data in column #c
+   float sum = 0.0;
+   float itm = 0.0;
+   for (size_t i = 0, n = _table.size(); i < n; ++i)
+   {
+       if(_table[i][c]!=INT_MAX){
+           sum += (float)_table[i][c];
+           itm += 1.0;
+       }
+   }
+   return sum/itm;
    return 0.0;
 }
 
@@ -239,7 +287,7 @@ DBTable::sort(const struct DBSort& s)
 void
 DBTable::printCol(size_t c) const
 {
-   // TODO: to print out a column.
+   // TODO...Done: to print out a column.
    // - Data are seperated by a space. No trailing space at the end.
    // - Null cells are printed as '.'
    for(unsigned int j=0;j<_table.size();j++){

@@ -163,8 +163,8 @@ CmdParser::parseCmd(string& option)
     return NULL;
     }
     else if (seccmd!=string::npos){
-      option = str.substr(seccmd);
-      cout << "seccmd is " << option << endl;
+      option = str.substr(seccmd+1);
+      //cout << "seccmd is " << option << endl;
       return e;
    }
    return e;
@@ -316,14 +316,14 @@ CmdParser::getCmd(string cmd)
 {
    CmdExec* e = 0;
    // TODO...
-   bool flag = 0;
+   //bool flag = 0;
    for (CmdMap::iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++)
    {
      if (cmd.size()>=(*i).first.size()){
      if (myStrNCmp(cmd,(*i).first,(*i).first.size())==0)//cmd.substr(0, (*i).first.size()) == (*i).first)
      {
-       cout << "getCmd:"<<(*i).first << endl;
-       flag = 1;
+       //cout << "getCmd:"<<(*i).first << endl;
+       //flag = 1;
        e = (*i).second;
        //check option
        //if(cmd.size()>(*i).first.size()){
