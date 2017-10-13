@@ -184,7 +184,7 @@ DBTable::addCol(const vector<int>& d)
 {
    // TODO...Done: add a column to the right of the table. Data are in 'd'.
    size_t d_size = d.size();
-   for (size_t i = 0, n = _table.size(); i < n; ++i)
+   for (size_t i = 0; i<nRows(); ++i)
    {
     if (i<d_size) _table[i].addData(d[i]);
     else _table[i].addData(INT_MAX);

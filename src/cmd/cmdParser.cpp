@@ -30,7 +30,21 @@ CmdParser::openDofile(const string& dof)
 {
    // TODO...
    _dofile = new ifstream(dof.c_str());
-   return true;
+   if(_dofileStack.size() > 1024){
+    for(size_t i = 0; i < 1024; ++i) _dofileStack.pop();
+    cerr << "Error: cannot open file " << dof.c_str() << "!!" << endl;
+    return false;
+ }
+   if (!*_dofile){
+      delete _dofile;
+      if (!_dofileStack.empty()) _dofile=_dofileStack.top();
+      return false;
+   }
+   else{
+      _dofileStack.push(_dofile);
+      _dofile=_dofileStack.top();
+      return true;
+   }
 }
 
 // Must make sure _dofile != 0
@@ -39,7 +53,10 @@ CmdParser::closeDofile()
 {
    assert(_dofile != 0);
    // TODO...
-   delete _dofile;
+   _dofile->close();
+   _dofile = 0;
+   _dofileStack.pop();
+   if (!_dofileStack.empty()) _dofile=_dofileStack.top();
 }
 
 // Return false if registration fails
@@ -302,6 +319,46 @@ void
 CmdParser::listCmd(const string& str)
 {
    // TODO...
+   size_t begin = str.find_first_not_of(' ');
+   string cmd;
+   size_t end = myStrGetTok(str, cmd);
+   if(begin == string::npos) {
+      int n = 0;
+      for(CmdMap::const_iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++, n++) {
+         if(!(n%5)) cout << endl;
+         cout << setw(12) << left << (i->first) + i->second->getOptCmd();
+      }
+   }
+   else if(end == string::npos){
+      vector<string> matched;
+      for(CmdMap::const_iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++) {
+         string cmdName = (i->first) + i->second->getOptCmd();
+         if(cmdName.size() < cmd.size()) continue;
+         if(myStrNCmp(cmdName, cmd, cmd.size()) == 0) matched.push_back(cmdName);
+      }
+      if(matched.size() == 0) {mybeep(); return;}
+      else if(matched.size() == 1) {
+         moveBufPtr(_readBuf + str.size());
+         for(int i = str.size(); i < matched[0].size() ; i++) insertChar(matched[0][i]);
+         insertChar(' ');
+         return;
+      }
+      else {
+         for(int i = 0; i < matched.size(); i++) {
+            if(!(i%5)) cout << endl;
+            cout << setw(12) << left << matched[i];
+         }
+      }
+   }
+   else {
+      CmdExec* e = getCmd(cmd);
+      if(e == 0) {mybeep(); return;}
+      else {
+         cout << endl;
+         e->usage(cout);
+      }
+   }
+   reprintCmd();
 }
 
 // cmd is a copy of the original input
@@ -324,7 +381,7 @@ CmdParser::getCmd(string cmd)
    for (CmdMap::iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++)
    {
      if (cmd.size()>=(*i).first.size()){
-     if (myStrNCmp(cmd,(*i).first,(*i).first.size())==0)//cmd.substr(0, (*i).first.size()) == (*i).first)
+     if (myStrNCmp(((*i).first + (*i).second->getOptCmd()),cmd,(*i).first.size())==0)//cmd.substr(0, (*i).first.size()) == (*i).first)
      {
        //cout << "getCmd:"<<(*i).first << endl;
        //flag = 1;
@@ -337,7 +394,7 @@ CmdParser::getCmd(string cmd)
      }
    }
   }
-   
+
    //if (flag==0){
    //  cout << "no such cmd named" << cmd << endl;
    //}

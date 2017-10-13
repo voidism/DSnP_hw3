@@ -59,7 +59,7 @@ initDbCmd()
    if (!(cmdMgr->regCmd("DBAPpend", 4, new DBAppendCmd) &&
    cmdMgr->regCmd("DBAVerage", 4, new DBAveCmd) &&
    cmdMgr->regCmd("DBCount", 3, new DBCountCmd) &&
-   cmdMgr->regCmd("DBDel", 3, new DBDelCmd) &&
+   cmdMgr->regCmd("DBDelete", 3, new DBDelCmd) &&
    cmdMgr->regCmd("DBMAx", 4, new DBMaxCmd) &&
    cmdMgr->regCmd("DBMIn", 4, new DBMinCmd) &&
    cmdMgr->regCmd("DBPrint", 3, new DBPrintCmd) &&
@@ -87,11 +87,15 @@ DBAppendCmd::exec(const string& option)
       return CMD_EXEC_ERROR;
    if (options.empty())
    return CmdExec::errorOption(CMD_OPT_MISSING, "");
-
+   
    bool doRow = false;
    if (myStrNCmp("-Row", options[0], 2) == 0) doRow = true;
    else if (myStrNCmp("-Column", options[0], 2) == 0) doRow = false;
    else return CmdExec::errorOption(CMD_OPT_ILLEGAL, options[0]);
+   if (!dbtbl) {
+        cerr << "Error: Table is not yet created!!" << endl;
+        return CMD_EXEC_ERROR;
+     }
 
    vector<int> vec;
    bool flag = 0;
@@ -108,8 +112,12 @@ DBAppendCmd::exec(const string& option)
    }
    if (doRow)
    {
-           for (unsigned int i = vec.size(); i < dbtbl.nRows();i++){
+           unsigned times = dbtbl.nCols() - vec.size();
+           for (unsigned int i = 0; i < times;i++){
                    vec.push_back(INT_MAX);
+           }
+           if (vec.size()!=dbtbl.nCols()){
+                   cout << "WTF!! vector:" << vec.size() << " but table cols:" << dbtbl.nCols() << endl;
            }
            DBRow temprow(vec);
            dbtbl.addRow(temprow);
@@ -434,7 +442,8 @@ DBReadCmd::exec(const string& option)
       cout << "Table is replaced..." << endl;
       dbtbl.reset();
    }
-   if (!(ifs >> dbtbl)) return CMD_EXEC_ERROR;
+   //if (!(ifs >> dbtbl)) return CMD_EXEC_ERROR;
+   ifs >> dbtbl;
    cout << "\"" << fileName << "\" was read in successfully." << endl;
 
    return CMD_EXEC_DONE;
