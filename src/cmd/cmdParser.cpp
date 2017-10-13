@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include "util.h"
 #include "cmdParser.h"
+#include <dirent.h>
 
 using namespace std;
 
@@ -314,51 +315,137 @@ CmdParser::parseCmd(string& option)
 //    cmd> he haha$kk
 //    [After Tab]
 //    ==> Beep and stay in the same location
+bool getdir(vector<string> &files){
+  DIR *dp;
+  string dir = ".";
+  struct dirent *dirp;
+  if((dp = opendir(dir.c_str())) == NULL){
+      cout << "Error(" << errno << ") opening " << dir << endl;
+      return false;
+  }
+  while((dirp = readdir(dp)) != NULL){
+      files.push_back(string(dirp->d_name));
+  }
+  closedir(dp);
+  return true;
+}
 
 void
 CmdParser::listCmd(const string& str)
 {
    // TODO...
-   size_t begin = str.find_first_not_of(' ');
-   string cmd;
-   size_t end = myStrGetTok(str, cmd);
-   if(begin == string::npos) {
-      int n = 0;
-      for(CmdMap::const_iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++, n++) {
-         if(!(n%5)) cout << endl;
-         cout << setw(12) << left << (i->first) + i->second->getOptCmd();
+   //_tabPressCount +=1;
+   size_t start;
+   size_t end = str.size();
+   bool nullstr = true;
+   
+   for ( std::string::const_iterator it=str.begin(); it!=str.end(); ++it){
+      if(*it != ' '){
+         nullstr = false;
+         start = str.find(*it);
+         break;
       }
    }
-   else if(end == string::npos){
-      vector<string> matched;
-      for(CmdMap::const_iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++) {
-         string cmdName = (i->first) + i->second->getOptCmd();
-         if(cmdName.size() < cmd.size()) continue;
-         if(myStrNCmp(cmdName, cmd, cmd.size()) == 0) matched.push_back(cmdName);
+   for ( std::string::const_reverse_iterator it=str.rbegin(); it!=str.rend(); ++it){
+    if(*it != ' '){
+       break;
+    }
+    else{
+      end -=1;
+    }
+ }
+   if(nullstr){
+   // 1. LIST ALL COMMANDS (ALL NULL string)
+   int count5 = 0;
+   cout << endl;
+   for (CmdMap::iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++){
+      string cmdentry = (*i).first + (*i).second->getOptCmd();
+      cout << setw(12) << left << cmdentry;
+      count5+=1;
+      if (count5 % 5 == 0) cout << endl;
+    }
+    reprintCmd();
+   }
+   // case 1 end
+   else{
+     string cmd = str.substr(start);
+     //CmdExec* e = getCmd(cmd);
+     //if (e==0){
+       vector<string> subspec;
+      for (CmdMap::iterator i = _cmdMap.begin(); i != _cmdMap.end(); i++)
+      {
+        if (cmd.size()<=((*i).first + (*i).second->getOptCmd()).size()){
+        if (myStrNCmp(((*i).first + (*i).second->getOptCmd()),cmd,cmd.size())==0)//cmd.substr(0, (*i).first.size()) == (*i).first)
+        {
+           subspec.push_back((*i).first + (*i).second->getOptCmd());
+        }
       }
-      if(matched.size() == 0) {mybeep(); return;}
-      else if(matched.size() == 1) {
-         moveBufPtr(_readBuf + str.size());
-         for(int i = str.size(); i < matched[0].size() ; i++) insertChar(matched[0][i]);
-         insertChar(' ');
-         return;
+
       }
-      else {
-         for(int i = 0; i < matched.size(); i++) {
-            if(!(i%5)) cout << endl;
-            cout << setw(12) << left << matched[i];
+   // 2. LIST ALL PARTIALLY MATCHED COMMANDS
+      if (subspec.size()>1){
+        cout << endl;
+        int count52=0;
+        for (vector<string>::iterator i = subspec.begin(); i != subspec.end(); i++){
+          cout << setw(12) << left << *i;
+          count52+=1;
+          if (count52 % 5 == 0) cout << endl;
+      }
+      reprintCmd();
+      }
+   // case 2 end
+
+   // 3. LIST THE SINGLY MATCHED COMMAND
+   //    ==> In either of the following cases, print out cmd + ' '
+   //    ==> and reset _tabPressCount to 0
+   // auto completed with a space inserted
+      else if (subspec.size()==1){
+          string clipped = subspec[0].substr(cmd.size());
+          for ( std::string::const_iterator it=clipped.begin(); it!=clipped.end(); ++it){
+            //*_readBufPtr = (char)*it;
+            //moveBufPtr(_readBufPtr+1);
+            insertChar(*it);
+          
          }
+         //*_readBufPtr = ' ';
+         //moveBufPtr(_readBufPtr+1);
+         if (end = str.size()){
+
+   // 5. FIRST WORD ALREADY MATCHED ON FIRST TAB PRESSING
+
+   // 6. FIRST WORD ALREADY MATCHED ON SECOND AND LATER TAB PRESSING
+         }
+         insertChar(' ');
+         
+         //reprintCmd();
       }
-   }
-   else {
-      CmdExec* e = getCmd(cmd);
-      if(e == 0) {mybeep(); return;}
-      else {
-         cout << endl;
-         e->usage(cout);
+
+
+   // 4. NO MATCH IN FITST WORD // don't do any thing and beep
+      else if (subspec.empty()){
+        mybeep();
       }
-   }
-   reprintCmd();
+     //}the end of if e == 0
+     /* else if (e){
+       //if (_tabPressCount == 0){
+        string clipped = e->
+        for ( std::string::const_iterator it=clipped.begin(); it!=clipped.end(); ++it){
+          *_readBufPtr = (char)*it;
+          _readBufPtr ++;
+        
+       }
+       *_readBufPtr = ' ';
+       _readBufPtr ++;
+       //cout << '\r';
+       cout << "fuck\n";
+       reprintCmd();
+       //}
+     } */
+    }
+
+   // 7. FIRST WORD NO MATCH
+   //Don't do any thing and let it go 
+   
 }
 
 // cmd is a copy of the original input

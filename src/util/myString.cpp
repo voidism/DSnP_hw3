@@ -18,7 +18,7 @@ using namespace std;
 // 3. The rest of s2 are optional. Return 0 if EOF of s2 is encountered.
 //    Otherwise, perform case-insensitive comparison until non-equal result
 //    presents.
-//
+//    s1 is the string predefined. s2 is the string user input.
 int
 myStrNCmp(const string& s1, const string& s2, unsigned n)
 {
