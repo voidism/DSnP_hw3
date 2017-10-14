@@ -341,7 +341,7 @@ string longestCommonPrefix(vector<string> &strs,string &pre) {
       }
       comPrefix.push_back(strs[0][i]);
   }
-  return comPrefix.substr(pre.size());
+  return comPrefix;//.substr(pre.size());
 }
 
 void
@@ -485,38 +485,36 @@ CmdParser::listCmd(const string& str)
               clipped = common.substr(second.size());
             //else
             //  clipped = "";
-            if (clipped!=""){
+            if (clipped!=""&&matched.size()>1){//have words to comp.,and multiple probablity
               mybeep();
               for ( std::string::const_iterator it=clipped.begin(); it!=clipped.end(); ++it){
                 //*_readBufPtr = (char)*it;
                 //moveBufPtr(_readBufPtr+1);
                 insertChar(*it);
-              
              }
-
             }
-            else if (matched.size()==1){
+            else if (matched.size()==1){//have words to comp.,but one probablity
                 string clipped = matched[0].substr(second.size());
                 for ( std::string::const_iterator it=clipped.begin(); it!=clipped.end(); ++it){
                   insertChar(*it);
-                
                }
+               insertChar(' ');
             }
-            else if(matched.size()>1){
+            else if(matched.size()>1){//no words to comp.,and multiple probablity
               cout << "\n";
               int count53 = 0;
               for (vector<string>::iterator i = matched.begin(); i != matched.end(); i++){
-                cout << setw(12) << left << *i;
+                cout << setw(16) << left << *i;
                 count53+=1;
                 if (count53 % 5 == 0) cout << endl;
               }
               reprintCmd();
             }
-            else if (second == ""){
+            else {//if (second == ""){//any other conditions
               cout << "\n";
               int count53 = 0;
               for (vector<string>::iterator i = fnames.begin(); i != fnames.end(); i++){
-                cout << setw(12) << left << *i;
+                cout << setw(16) << left << *i;
                 count53+=1;
                 if (count53 % 5 == 0) cout << endl;
               }
