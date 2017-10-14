@@ -373,7 +373,7 @@ DBPrintCmd::exec(const string& option)
            if (opts.size() > 2)
                    return errorOption(CMD_OPT_EXTRA, opts[2]);
            if (checkRowIdx(opts[0],r) && checkColIdx(opts[1],c))
-                   cout << dbtbl[r][c];
+                   cout << dbtbl[r][c] << endl;
    }
    else{
            string i = "";

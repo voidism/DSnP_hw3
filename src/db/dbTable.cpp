@@ -30,9 +30,11 @@ ostream& operator << (ostream& os, const DBRow& r)
    // - Data are seperated by a space. No trailing space at the end.
    // - Null cells are printed as '.'
    for(unsigned int j=0;j<r.size();j++){
-    if(r[j]==INT_MAX){ os << setw(6) <<'.'; }
-    else os << setw(6) <<r[j];
+    if(r[j]==INT_MAX){ os <<'.'; }
+    else os <<r[j];
+    if (j!=r.size()-1) cout << ' ';
 }
+   cout << endl;
    return os;
 }
 
@@ -41,13 +43,15 @@ ostream& operator << (ostream& os, const DBTable& t)
    // TODO...Done: to print out a table
    // - Data are seperated by setw(6) and aligned right.
    // - Null cells are printed as '.'
-   for(unsigned int i=0;i<t.nRows();i++){/* 
+   for(unsigned int i=0;i<t.nRows();i++){
     for(unsigned int j=0;j<t.nCols();j++){
          if(t._table[i][j]==INT_MAX){ os << setw(6) <<'.'; }
-         else os << setw(6) <<t._table[i][j];
-     } */
-     os << t._table[i] << endl;
+         else os << right << setw(6) <<t._table[i][j];
+     } 
+     cout << endl;
+     //os << t._table[i] << endl;
  }
+   cout << endl;
    return os;
 }
 
@@ -107,7 +111,7 @@ ifstream& operator >> (ifstream& ifs, DBTable& t)
     else if (str.find("\r") != string::npos) dtp = '\r';
     else if (str.find("\n") != string::npos) dtp = '\n';
     if (dtp == '0')
-        cout << "fuck\n";
+        cout << "error\n";
     while (getline(ifs, line, dtp))
     {
         //cout << "loop\n";
@@ -336,6 +340,7 @@ DBTable::printCol(size_t c) const
     if (j!=_table.size()-1)
         cout << ' ';
    }
+   cout << endl;
 }
 
 void
