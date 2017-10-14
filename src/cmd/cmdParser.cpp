@@ -486,6 +486,7 @@ CmdParser::listCmd(const string& str)
             //else
             //  clipped = "";
             if (clipped!=""){
+              mybeep();
               for ( std::string::const_iterator it=clipped.begin(); it!=clipped.end(); ++it){
                 //*_readBufPtr = (char)*it;
                 //moveBufPtr(_readBufPtr+1);
