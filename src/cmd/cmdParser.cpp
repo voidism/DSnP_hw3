@@ -449,14 +449,21 @@ CmdParser::listCmd(const string& str)
          
 
 
-   // 4. NO MATCH IN FITST WORD // don't do any thing and beep
+   
       else if (subspec.empty()){
         string main = str.substr(start, end-start);
-        string second = str.substr(end+1);
-        //cout << endl << main << endl << second;
+        string second;
+
         CmdExec* exe = 0;
-        exe = getCmd(main);
-        if(exe!=0){
+        if(end<str.size()){
+          second = str.substr(end+1);
+          exe = getCmd(main);
+        } 
+        //cout << endl << main << endl << second;
+        //if (second=="") mybeep();
+        // 4. NO MATCH IN FITST WORD // don't do any thing and beep
+        if(exe==0) mybeep();
+        else if(exe!=0){
           if (_tabPressCount==1){
             cout << "\n";
             exe->usage(cout);
@@ -487,7 +494,14 @@ CmdParser::listCmd(const string& str)
              }
 
             }
-            else if(matched.size()>0){
+            else if (matched.size()==1){
+                string clipped = matched[0].substr(second.size());
+                for ( std::string::const_iterator it=clipped.begin(); it!=clipped.end(); ++it){
+                  insertChar(*it);
+                
+               }
+            }
+            else if(matched.size()>1){
               cout << "\n";
               int count53 = 0;
               for (vector<string>::iterator i = matched.begin(); i != matched.end(); i++){
@@ -497,7 +511,7 @@ CmdParser::listCmd(const string& str)
               }
               reprintCmd();
             }
-            else {//if (second == ""){
+            else if (second == ""){
               cout << "\n";
               int count53 = 0;
               for (vector<string>::iterator i = fnames.begin(); i != fnames.end(); i++){
