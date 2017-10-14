@@ -12,6 +12,7 @@
 #include "util.h"
 #include "cmdParser.h"
 #include <dirent.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -320,7 +321,7 @@ bool getdir(vector<string> &files){
   string dir = ".";
   struct dirent *dirp;
   if((dp = opendir(dir.c_str())) == NULL){
-      cout << "Error(" << errno << ") opening " << dir << endl;
+      cout << "Error opening " << dir << endl;
       return false;
   }
   while((dirp = readdir(dp)) != NULL){
@@ -328,6 +329,19 @@ bool getdir(vector<string> &files){
   }
   closedir(dp);
   return true;
+}
+
+string longestCommonPrefix(vector<string> &strs,string &pre) {
+  string comPrefix ;//= pre;
+  if(strs.empty()) return comPrefix;
+  for(unsigned int i=0; i<strs[0].size(); i++) {
+      for(unsigned int j=1; j<strs.size(); j++) {
+          if(i>=strs[j].size() || strs[j][i]!=strs[0][i])
+              return comPrefix;
+      }
+      comPrefix.push_back(strs[0][i]);
+  }
+  return comPrefix.substr(pre.size());
 }
 
 void
@@ -343,17 +357,24 @@ CmdParser::listCmd(const string& str)
       if(*it != ' '){
          nullstr = false;
          start = str.find(*it);
+         end = start;
+         for ( std::string::const_iterator it2=it; it2!=str.end(); ++it2){
+          if(*it2 == ' '){
+             break;
+          }
+          else end ++;
+        }
          break;
       }
    }
-   for ( std::string::const_reverse_iterator it=str.rbegin(); it!=str.rend(); ++it){
+   /* for ( std::string::const_reverse_iterator it=str.rbegin(); it!=str.rend(); ++it){
     if(*it != ' '){
        break;
     }
     else{
       end -=1;
     }
- }
+ } */
    if(nullstr){
    // 1. LIST ALL COMMANDS (ALL NULL string)
    int count5 = 0;
@@ -364,6 +385,8 @@ CmdParser::listCmd(const string& str)
       count5+=1;
       if (count5 % 5 == 0) cout << endl;
     }
+    
+    _tabPressCount=0;
     reprintCmd();
    }
    // case 1 end
@@ -391,6 +414,8 @@ CmdParser::listCmd(const string& str)
           count52+=1;
           if (count52 % 5 == 0) cout << endl;
       }
+
+      _tabPressCount=0;
       reprintCmd();
       }
    // case 2 end
@@ -409,21 +434,83 @@ CmdParser::listCmd(const string& str)
          }
          //*_readBufPtr = ' ';
          //moveBufPtr(_readBufPtr+1);
-         if (end = str.size()){
+         //if (end == str.size()){
+        //}
+        insertChar(' ');
+
+        _tabPressCount=0;
+        
+        //reprintCmd();
+     }
 
    // 5. FIRST WORD ALREADY MATCHED ON FIRST TAB PRESSING
 
    // 6. FIRST WORD ALREADY MATCHED ON SECOND AND LATER TAB PRESSING
-         }
-         insertChar(' ');
          
-         //reprintCmd();
-      }
 
 
    // 4. NO MATCH IN FITST WORD // don't do any thing and beep
       else if (subspec.empty()){
-        mybeep();
+        string main = str.substr(start, end-start);
+        string second = str.substr(end+1);
+        //cout << endl << main << endl << second;
+        CmdExec* exe = 0;
+        exe = getCmd(main);
+        if(exe!=0){
+          if (_tabPressCount==1){
+            cout << "\n";
+            exe->usage(cout);
+            reprintCmd();
+          }
+          if (_tabPressCount>=2){
+            vector<string> fnames;
+            string common = "";
+            if (!getdir(fnames)) cout << "fail\n";
+            std::sort(fnames.begin(), fnames.end());
+            vector <string> matched;
+            for (vector<string>::iterator i = fnames.begin(); i != fnames.end(); i++){
+              if (i->compare(0, second.size(), second)==0)
+                 matched.push_back(*i);
+             }
+            common = longestCommonPrefix(matched,second);
+            string clipped = "";
+            if(second.size()<common.size())
+              clipped = common.substr(second.size());
+            //else
+            //  clipped = "";
+            if (clipped!=""){
+              for ( std::string::const_iterator it=clipped.begin(); it!=clipped.end(); ++it){
+                //*_readBufPtr = (char)*it;
+                //moveBufPtr(_readBufPtr+1);
+                insertChar(*it);
+              
+             }
+
+            }
+            else if(matched.size()>0){
+              cout << "\n";
+              int count53 = 0;
+              for (vector<string>::iterator i = matched.begin(); i != matched.end(); i++){
+                cout << setw(12) << left << *i;
+                count53+=1;
+                if (count53 % 5 == 0) cout << endl;
+              }
+              reprintCmd();
+            }
+            else {//if (second == ""){
+              cout << "\n";
+              int count53 = 0;
+              for (vector<string>::iterator i = fnames.begin(); i != fnames.end(); i++){
+                cout << setw(12) << left << *i;
+                count53+=1;
+                if (count53 % 5 == 0) cout << endl;
+              }
+              reprintCmd();
+            }
+            
+          }
+        }
+        else mybeep();
       }
      //}the end of if e == 0
      /* else if (e){
